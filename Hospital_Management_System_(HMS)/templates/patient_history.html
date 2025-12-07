@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2>Patient Medical History</h2>
+  
+  <h4>Patient Details</h4>
+  <ul>
+    <li><strong>Name:</strong> {{ patient.name }}</li>
+    <li><strong>Email:</strong> {{ patient.email }}</li>
+    <li><strong>Contact:</strong> {{ patient.contact_number or 'N/A' }}</li>
+    <li><strong>Age:</strong> {{ patient.age or 'N/A' }}</li>
+    <li><strong>Gender:</strong> {{ patient.gender or 'N/A' }}</li>
+  </ul>
+  
+  <hr>
+
+  <h4>Visit History</h4>
+  
+  {% if history %}
+    {% for appt in history %}
+      <div style="border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+        
+        <h4 style="margin-top: 0;">Visit on: {{ appt.date }} at {{ appt.time }}</h4>
+        <p><strong>Doctor:</strong> {{ appt.doctor.name }} ({{ appt.doctor.department.name }})</p>
+        
+        {% if appt.treatments %}
+          {% set treatment = appt.treatments[0] %}
+          <div style="background-color: #f9f9f9; padding: 10px; border-radius: 4px;">
+            <p><strong>Diagnosis:</strong><br>{{ treatment.diagnosis | nl2br }}</p>
+            <p><strong>Prescription:</strong><br>{{ treatment.prescription | nl2br }}</p>
+            {% if treatment.notes %}
+              <p><strong>Follow-up Notes:</strong><br>{{ treatment.notes | nl2br }}</p>
+            {% endif %}
+          </div>
+        {% else %}
+          <p><em>No treatment notes were recorded for this visit.</em></p>
+        {% endif %}
+
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>This patient has no completed visit history.</p>
+  {% endif %}
+
+  <p style="margin-top: 20px;">
+    <a href="{{ url_for('doctor_dashboard') }}">Back to Dashboard</a>
+  </p>
+
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2>Manage Appointment</h2>
+  
+  <h4>Appointment Details</h4>
+  <ul>
+    <li><strong>Patient:</strong> {{ appt.patient.name }}
+    <a href="{{ url_for('patient_history', patient_id=appt.patient.id) }}" style="margin-left: 15px;">(View Full History)</a>
+  </li>
+    <li><strong>Date:</strong> {{ appt.date }}</li>
+    <li><strong>Time:</strong> {{ appt.time }}</li>
+    <li><strong>Status:</strong> <span class="status-{{ appt.status | lower }}">{{ appt.status }}</span></li>
+  </ul>
+  
+  <hr>
+
+  <h4>Diagnosis & Treatment Notes</h4>
+  <p>To mark this appointment as 'Completed', please fill out the fields below.</p>
+  
+  <form method="POST" action="{{ url_for('manage_appointment', appt_id=appt.id) }}">
+    <div>
+      <label for="diagnosis">Diagnosis</label><br>
+      <textarea id="diagnosis" name="diagnosis" rows="4" required>{{ treatment.diagnosis if treatment else '' }}</textarea>
+    </div>
+    <div>
+      <label for="prescription">Prescription</label><br>
+      <textarea id="prescription" name="prescription" rows="4" required>{{ treatment.prescription if treatment else '' }}</textarea>
+    </div>
+    <div>
+      <label for="notes">Follow-up Notes (optional)</label><br>
+      <textarea id="notes" name="notes" rows="2">{{ treatment.notes if treatment else '' }}</textarea>
+    </div>
+    <div style="margin-top:20px;">
+      <button type="submit">Save and Mark as Completed</button>
+    </div>
+  </form>
+  
+  <hr style="margin-top: 25px;">
+  
+  <h4>Other Actions</h4>
+  <p>If you need to cancel this appointment:</p>
+  <form method="POST" action="{{ url_for('cancel_appointment', appt_id=appt.id) }}">
+    <button type="submit" class="btn-deactivate" onclick="return confirm('Are you sure you want to cancel this appointment?')">
+      Cancel Appointment
+    </button>
+  </form>
+
+  <p style="margin-top: 20px;">
+    <a href="{{ url_for('doctor_dashboard') }}">Back to Dashboard (without saving)</a>
+  </p>
+
+{% endblock %}

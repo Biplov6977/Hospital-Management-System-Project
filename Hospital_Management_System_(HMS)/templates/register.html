@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2>Patient Registration</h2>
+
+  <form method="post" action="{{ url_for('register') }}">
+    <div>
+      <label for="name">Full name</label><br>
+      <input id="name" name="name" type="text" required maxlength="150">
+    </div>
+
+    <div>
+      <label for="email">Email</label><br>
+      <input id="email" name="email" type="email" required maxlength="150">
+    </div>
+
+    <div>
+      <label for="password">Password</label><br>
+      <input id="password" name="password" type="password" required minlength="6">
+    </div>
+
+    <div>
+      <label for="confirm_password">Confirm Password</label><br>
+      <input id="confirm_password" name="confirm_password" type="password" required minlength="6">
+    </div>
+
+    <div>
+      <label for="age">Age (optional)</label><br>
+      <input id="age" name="age" type="number" min="0" step="1">
+    </div>
+
+    <div>
+      <label for="gender">Gender (optional)</label><br>
+      <select id="gender" name="gender">
+        <option value="">Select</option>
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="contact_number">Contact number (optional)</label><br>
+      <input id="contact_number" name="contact_number" type="tel" pattern="^\+?[0-9]{7,15}$" placeholder="+919xxxxxxxxx">
+    </div>
+
+    <div>
+      <label for="address">Address (optional)</label><br>
+      <textarea id="address" name="address" rows="2"></textarea>
+    </div>
+
+    <div style="margin-top:10px;">
+      <button type="submit">Register</button>
+    </div>
+  </form>
+
+  <p>Already have an account? <a href="{{ url_for('login') }}">Login here</a>.</p>
+  
+{% endblock %}

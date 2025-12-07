@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2>Patient Dashboard</h2>
+  <p>Welcome, {{ current_user.name }}!</p>
+
+  <hr style="margin-top: 25px;">
+  
+  <h3>Find a Doctor</h3>
+  <p>Search by doctor's name or specialization (e.g., "Cardiology").</p>
+  
+  <form method="GET" action="{{ url_for('patient_dashboard') }}">
+    <div style="display: flex; margin-bottom: 15px;">
+      <input type="text" name="search_query" placeholder="Search..." value="{{ search_query or '' }}" style="flex-grow: 1; margin-bottom: 0;">
+      <button type="submit" style="margin-left: 10px;">Search</button>
+      {% if search_query %}
+        <a href="{{ url_for('patient_dashboard') }}" style="margin-left: 10px; line-height: 45px;">Clear</a>
+      {% endif %}
+    </div>
+  </form>
+  
+  <table style="width: 100%; border-collapse: collapse;">
+    <thead>
+      <tr style="border-bottom: 2px solid #333;">
+        <th style="text-align: left; padding: 8px;">Doctor Name</th>
+        <th style="text-align: left; padding: 8px;">Specialization</th>
+        <th style="text-align: left; padding: 8px;">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for doctor in doctors %}
+        <tr style="border-bottom: 1px solid #ddd;">
+          <td style="padding: 8px;">{{ doctor.name }}</td>
+          <td style="padding: 8px;">{{ doctor.department.name if doctor.department else 'N/A' }}</td>
+          <td style="padding: 8px;">
+            <a href="{{ url_for('book_appointment_form', doctor_id=doctor.id) }}" class="btn-book" style="text-decoration: none;">Book Appointment</a>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="3" style="padding: 8px;">No doctors found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <hr style="margin-top: 25px;">
+
+  <h3>Your Upcoming Appointments</h3>
+  <table style="width: 100%; border-collapse: collapse;">
+    <thead>
+      <tr style="border-bottom: 2px solid #333;">
+        <th style="text-align: left; padding: 8px;">Doctor</th>
+        <th style="text-align: left; padding: 8px;">Specialization</th>
+        <th style="text-align: left; padding: 8px;">Date</th>
+        <th style="text-align: left; padding: 8px;">Time</th>
+        <th style="text-align: left; padding: 8px;">Status</th>
+        <th style="text-align: left; padding: 8px;">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for appt in upcoming_appointments %}
+        <tr style="border-bottom: 1px solid #ddd;">
+          <td style="padding: 8px;">{{ appt.doctor.name }}</td>
+          <td style="padding: 8px;">{{ appt.doctor.department.name }}</td>
+          <td style="padding: 8px;">{{ appt.date }}</td>
+          <td style="padding: 8px;">{{ appt.time }}</td>
+          <td style="padding: 8px;">
+            <span class="status-{{ appt.status | lower }}">{{ appt.status }}</span>
+          </td>
+          <td style="padding: 8px;">
+            <form action="{{ url_for('patient_cancel_appointment', appt_id=appt.id) }}" method="POST" style="display:inline;">
+            <button type="submit" class="btn-deactivate" onclick="return confirm('Are you sure you want to cancel this appointment?')">Cancel</button>
+            </form>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="6" style="padding: 8px;">You have no upcoming appointments.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <hr style="margin-top: 25px;">
+
+  <h3>Your Past Appointments</h3>
+  <table style="width: 100%; border-collapse: collapse;">
+    <thead>
+      <tr style="border-bottom: 2px solid #333;">
+        <th style="text-align: left; padding: 8px;">Doctor</th>
+        <th style="text-align: left; padding: 8px;">Specialization</th>
+        <th style="text-align: left; padding: 8px;">Date</th>
+        <th style="text-align: left; padding: 8px;">Status</th>
+        <th style="text-align: left; padding: 8px;">Details</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for appt in past_appointments %}
+        <tr style="border-bottom: 1px solid #ddd;">
+          <td style="padding: 8px;">{{ appt.doctor.name }}</td>
+          <td style="padding: 8px;">{{ appt.doctor.department.name }}</td>
+          <td style="padding: 8px;">{{ appt.date }}</td>
+          <td style="padding: 8px;">
+            <span class="status-{{ appt.status | lower }}">{{ appt.status }}</span>
+          </td>
+          <td style="padding: 8px;">
+            {% if appt.status == 'Completed' %}
+              <a href="{{ url_for('view_appointment_details', appt_id=appt.id) }}" class="btn-edit" style="text-decoration: none;">View Details</a>
+            {% else %}
+              N/A
+            {% endif %}
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="5" style="padding: 8px;">You have no past appointments.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+
+{% endblock %}

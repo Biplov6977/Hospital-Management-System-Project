@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2>Book Appointment</h2>
+  
+  <h4>with {{ doctor.name }} ({{ doctor.department.name }})</h4>
+
+  <p>Please select an available day and time slot.</p>
+
+  <form action="{{ url_for('create_appointment') }}" method="POST">
+    <input type="hidden" name="doctor_id" value="{{ doctor.id }}">
+    
+    {% if available_slots %}
+      
+      {% for day in available_slots %}
+        <div style="margin-bottom: 20px;">
+          <strong>{{ day.date_str }} ({{ day.day_name }})</strong>
+          
+          <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;">
+            
+            {% for time in day.slots %}
+              <div class="slot-radio">
+                <input type="radio" 
+                       id="slot_{{ day.date_str }}_{{ time }}" 
+                       name="appt_selection" 
+                       value="{{ day.date_str }}_{{ time }}" 
+                       required>
+                <label for="slot_{{ day.date_str }}_{{ time }}">{{ time }}</label>
+              </div>
+            {% endfor %}
+
+          </div>
+        </div>
+      {% endfor %}
+
+      <div style="margin-top: 25px;">
+        <button type="submit">Confirm Appointment</button>
+      </div>
+
+    {% else %}
+    <p>Sorry, Dr. {{doctor.name}} is not available for next 7 days, Please come back later.</p>
+    {% endif %}
+  </form>
+
+  <p style="margin-top: 20px;">
+    <a href="{{ url_for('patient_dashboard') }}">Back to Doctor List</a>
+  </p>
+
+  <script>
+    document.querySelector('form').addEventListener('submit', function(e) {
+      const selected = document.querySelector('input[name="appt_selection"]:checked');
+      if (selected) {
+        const parts = selected.value.split('_');
+        const apptDate = parts[0];
+        const apptTime = parts[1];
+
+        const dateInput = document.createElement('input');
+        dateInput.type = 'hidden';
+        dateInput.name = 'appt_date';
+        dateInput.value = apptDate;
+        this.appendChild(dateInput);
+        
+        const timeInput = document.createElement('input');
+        timeInput.type = 'hidden';
+        timeInput.name = 'appt_time';
+        timeInput.value = apptTime;
+        this.appendChild(timeInput);
+      }
+    });
+  </script>
+  
+{% endblock %}

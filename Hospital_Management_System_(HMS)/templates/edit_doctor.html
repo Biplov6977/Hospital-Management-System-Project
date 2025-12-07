@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2>Edit Doctor Profile</h2>
+  <p>Editing the profile for <strong>{{ doctor.name }}</strong>.</p>
+
+  <form method="post" action="{{ url_for('edit_doctor_submit', user_id=doctor.id) }}">
+    <div>
+      <label for="name">Full name</label><br>
+      <input id="name" name="name" type="text" value="{{ doctor.name }}" required maxlength="150">
+    </div>
+    
+    <div>
+      <label for="email">Email</label><br>
+      <input id="email" name="email" type="email" value="{{ doctor.email }}" required maxlength="150">
+    </div>
+    
+    <div>
+      <label for="specialization_id">Department/Specialization</label><br>
+      <select id="specialization_id" name="specialization_id" required>
+        <option value="">Select a department...</option>
+        {% for dept in departments %}
+          <option value="{{ dept.id }}" {% if dept.id == doctor.specialization_id %}selected{% endif %}>
+            {{ dept.name }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+    
+    <div style="margin-top:10px;">
+      <button type="submit">Update Profile</button>
+    </div>
+  </form>
+
+  <p style="margin-top: 20px;">
+    <a href="{{ url_for('admin_dashboard') }}">Cancel and go back</a>
+  </p>
+
+
+
+{% endblock %}

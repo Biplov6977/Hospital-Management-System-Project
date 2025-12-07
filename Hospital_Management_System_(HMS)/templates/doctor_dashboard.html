@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2>Doctor Dashboard</h2>
+  <p>Welcome, Dr. {{ current_user.name }}!</p>
+  
+  <hr>
+  <h3> Upcoming Appointments</h3>
+  <table style = "width: 100%; border-collapse: collapse;">
+    <thead>
+      <tr style="border-bottom: 2px solid #333;">
+        <th style="text-align: left; padding: 8px;">Patient</th>
+        <th style="text-align: left; padding: 8px;">Date</th>
+        <th style="text-align: left; padding: 8px;">Time</th>
+        <th style="text-align: left; padding: 8px;">Status</th>
+        <th style="text-align: left; padding: 8px;">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for appt in upcoming_appointments %}
+      <tr style="border-bottom: 1px solid #ddd;">
+        <td style="padding:8px;">{{appt.patient.name}}</td>
+        <td style="padding:8px;">{{appt.date}}</td>
+        <td style="padding:8px;">{{appt.time}}</td>
+        <td style="padding: 8px;"><span class="status-{{ appt.status | lower }}">{{ appt.status }}</span></td>
+        <td style="padding: 8px;"><a href="{{ url_for('manage_appointment', appt_id=appt.id) }}" class="btn-edit" style="text-decoration: none;">Manage</a></td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="5" style = "padding: 8px;">No Upcoming Appointments.😊</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <hr style="margin-top: 25px;">
+
+  <h3>Past & Completed Appointments</h3>
+  <table style="width: 100%; border-collapse: collapse;">
+    <thead>
+      <tr style="border-bottom: 2px solid #333;">
+        <th style="text-align: left; padding: 8px;">Patient</th>
+        <th style="text-align: left; padding: 8px;">Date</th>
+        <th style="text-align: left; padding: 8px;">Time</th>
+        <th style="text-align: left; padding: 8px;">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for appt in past_appointments %}
+        <tr style="border-bottom: 1px solid #ddd;">
+          <td style="padding: 8px;">{{ appt.patient.name }}</td>
+          <td style="padding: 8px;">{{ appt.date }}</td>
+          <td style="padding: 8px;">{{ appt.time }}</td>
+          <td style="padding: 8px;">
+            <span class="status-{{ appt.status | lower }}">
+              {{ appt.status }}
+            </span>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="4" style="padding: 8px;">No past appointments found.😊</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <hr style="margin-top: 25px;">
+  
+  <h3>Manage Your Availability (Next 7 Days)</h3>
+  <p>Check the "Available" box and set your hours for the days you are working!</p>
+  
+  <form action="{{ url_for('update_availability') }}" method="POST">
+    <table style="width: 100%; border-collapse: collapse;">
+      <thead>
+        <tr style="border-bottom: 2px solid #333;">
+          <th style="text-align: left; padding: 8px;">Date</th>
+          <th style="text-align: left; padding: 8px;">Day</th>
+          <th style="text-align: left; padding: 8px;">Available?</th>
+          <th style="text-align: left; padding: 8px;">Start Time</th>
+          <th style="text-align: left; padding: 8px;">End Time</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for day in availability_schedule %}
+          <tr style="border-bottom: 1px solid #ddd;">
+            <input type="hidden" name="avail_id" value="{{ day.avail_record.id }}">
+            
+            <td style="padding: 8px;">{{ day.avail_record.date }}</td>
+            <td style="padding: 8px;">{{ day.day_name }}</td>
+            <td style="padding: 8px;">
+              <input type="checkbox" name="is_available_{{ day.avail_record.id }}" 
+                     {% if day.avail_record.is_available %}checked{% endif %}>
+            </td>
+            <td style="padding: 8px;">
+              <input type="time" name="start_time_{{ day.avail_record.id }}" value="{{ day.avail_record.start_time }}">
+            </td>
+            <td style="padding: 8px;">
+              <input type="time" name="end_time_{{ day.avail_record.id }}" value="{{ day.avail_record.end_time }}">
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div style="margin-top:20px;">
+      <button type="submit">Update Availability</button>
+    </div>
+  </form>
+  
+{% endblock %}

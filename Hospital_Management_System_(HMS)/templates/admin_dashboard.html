@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2>Admin Dashboard</h2>
+  <p>Welcome, {{ current_user.name }}!</p>
+
+  <div style="display: flex; justify-content: space-around; margin: 20px 0;">
+    <div style="text-align: center;">
+      <h3>{{ patient_count }}</h3>
+      <p>Active Patients</p>
+    </div>
+    <div style="text-align: center;">
+      <h3>{{ doctor_count }}</h3>
+      <p>Active Doctors</p>
+    </div>
+    <div style="text-align: center;">
+      <h3>{{ appointment_count }}</h3>
+      <p>Total Appointments</p>
+    </div>
+  </div>
+
+  <hr>
+
+  <div style="display: flex; justify-content: space-between;">
+    <div style="width: 48%;">
+      <h3>Add New Department</h3>
+      <form method="post" action="{{ url_for('add_department') }}">
+        <div>
+          <label for="dept_name">Department Name</label><br>
+          <input id="dept_name" name="name" type="text" required>
+        </div>
+        <div>
+          <label for="dept_desc">Description (optional)</label><br>
+          <textarea id="dept_desc" name="description" rows="2"></textarea>
+        </div>
+        <div style="margin-top:10px;">
+          <button type="submit">Add Department</button>
+        </div>
+      </form>
+    </div>
+
+    <div style="width: 48%;">
+      <h3>Add New Doctor</h3>
+      {% if departments %}
+        <form method="post" action="{{ url_for('add_doctor') }}">
+          <div>
+            <label for="name">Full name</label><br>
+            <input id="name" name="name" type="text" required maxlength="150">
+          </div>
+          <div>
+            <label for="email">Email</label><br>
+            <input id="email" name="email" type="email" required maxlength="150">
+          </div>
+          <div>
+            <label for="password">Password (min. 6 chars)</label><br>
+            <input id="password" name="password" type="password" required minlength="6">
+          </div>
+          <div>
+            <label for="specialization_id">Department/Specialization</label><br>
+            <select id="specialization_id" name="specialization_id" required>
+              <option value="">Select a department...</option>
+              {% for dept in departments %}
+                <option value="{{ dept.id }}">{{ dept.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div style="margin-top:10px;">
+            <button type="submit">Add Doctor</button>
+          </div>
+        </form>
+      {% else %}
+        <p><strong>Please add a department first before you can add doctors.</strong></p>
+      {% endif %}
+    </div>
+  </div>
+
+  <hr>
+
+  <h3>Manage Doctors ({{ all_doctors|length }})</h3>
+  
+  <form method="GET" action="{{ url_for('admin_dashboard') }}">
+    <div style="display: flex; margin-bottom: 15px;">
+      <input type="text" name="doctor_search" placeholder="Search by name, email, or specialization..." value="{{ doctor_search or '' }}" style="flex-grow: 1; margin-bottom: 0;">
+      <button type="submit" style="margin-left: 10px;">Search</button>
+      {% if doctor_search %}
+        <a href="{{ url_for('admin_dashboard') }}" style="margin-left: 10px; line-height: 45px;">Clear</a>
+      {% endif %}
+    </div>
+  </form>
+
+  <table style="width: 100%; border-collapse: collapse;">
+    <thead>
+      <tr style="border-bottom: 2px solid #333;">
+        <th style="text-align: left; padding: 8px;">Name</th>
+        <th style="text-align: left; padding: 8px;">Email</th>
+        <th style="text-align: left; padding: 8px;">Specialization</th>
+        <th style="text-align: left; padding: 8px;">Status</th>
+        <th style="text-align: left; padding: 8px;">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for doctor in all_doctors %}
+        <tr style="border-bottom: 1px solid #ddd;">
+          <td style="padding: 8px;">{{ doctor.name }}</td>
+          <td style="padding: 8px;">{{ doctor.email }}</td>
+          <td style="padding: 8px;">{{ doctor.department.name if doctor.department else 'N/A' }}</td>
+          <td style="padding: 8px;">
+            {% if doctor.is_active %}
+              <span style="color: green;">Active</span>
+            {% else %}
+              <span style="color: red;">Deactivated</span>
+            {% endif %}
+          </td>
+          <td style="padding: 8px;">
+            <a href="{{ url_for('edit_doctor_form', user_id=doctor.id) }}" class="btn-edit" style="text-decoration: none;">Edit</a>
+            <form action="{{ url_for('toggle_active', user_id=doctor.id) }}" method="POST" style="display:inline; margin-left: 5px;">
+              <button type="submit" class="{{ 'btn-activate' if not doctor.is_active else 'btn-deactivate' }}">
+                {{ "Activate" if not doctor.is_active else "Deactivate" }}
+              </button>
+            </form>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="5" style="padding: 8px;">{% if doctor_search %}No doctors found for '{{ doctor_search }}'.{% else %}No doctors found.{% endif %}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <hr style="margin-top: 25px;">
+
+  <h3>Manage Patients ({{ all_patients|length }})</h3>
+  
+  <form method="GET" action="{{ url_for('admin_dashboard') }}">
+    <div style="display: flex; margin-bottom: 15px;">
+      <input type="text" name="patient_search" placeholder="Search by name, email, contact, or ID..." value="{{ patient_search or '' }}" style="flex-grow: 1; margin-bottom: 0;">
+      <button type="submit" style="margin-left: 10px;">Search</button>
+      {% if patient_search %}
+        <a href="{{ url_for('admin_dashboard') }}" style="margin-left: 10px; line-height: 45px;">Clear</a>
+      {% endif %}
+    </div>
+  </form>
+
+  <table style="width: 100%; border-collapse: collapse;">
+    <thead>
+      <tr style="border-bottom: 2px solid #333;">
+        <th style="text-align: left; padding: 8px;">Name</th>
+        <th style="text-align: left; padding: 8px;">Email</th>
+        <th style="text-align: left; padding: 8px;">Contact</th>
+        <th style="text-align: left; padding: 8px;">Status</th>
+        <th style="text-align: left; padding: 8px;">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for patient in all_patients %}
+        <tr style="border-bottom: 1px solid #ddd;">
+          <td style="padding: 8px;">{{ patient.name }}</td>
+          <td style="padding: 8px;">{{ patient.email }}</td>
+          <td style="padding: 8px;">{{ patient.contact_number if patient.contact_number else 'N/A' }}</td>
+          <td style="padding: 8px;">
+            {% if patient.is_active %}
+              <span style="color: green;">Active</span>
+            {% else %}
+              <span style="color: red;">Deactivated</span>
+            {% endif %}
+          </td>
+          <td style="padding: 8px;">
+            <form action="{{ url_for('toggle_active', user_id=patient.id) }}" method="POST" style="display:inline;">
+              <button type="submit" class="{{ 'btn-activate' if not patient.is_active else 'btn-deactivate' }}">
+                {{ "Activate" if not patient.is_active else "Deactivate" }}
+              </button>
+            </form>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="5" style="padding: 8px;">{% if patient_search %}No patients found for '{{ patient_search }}'.{% else %}No patients found.{% endif %}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <hr style="margin-top: 25px;">
+
+  <h3>All Appointments ({{ all_appointments|length }})</h3>
+  <table style="width: 100%; border-collapse: collapse;">
+    <thead>
+      <tr style="border-bottom: 2px solid #333;">
+        <th style="text-align: left; padding: 8px;">Patient</th>
+        <th style="text-align: left; padding: 8px;">Doctor</th>
+        <th style="text-align: left; padding: 8px;">Specialization</th>
+        <th style="text-align: left; padding: 8px;">Date & Time</th>
+        <th style="text-align: left; padding: 8px;">Status</th>
+        <th style="text-align: left; padding: 8px;">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for appt in all_appointments %}
+        <tr style="border-bottom: 1px solid #ddd;">
+          <td style="padding: 8px;">{{ appt.patient.name if appt.patient else 'N/A' }}</td>
+          <td style="padding: 8px;">{{ appt.doctor.name if appt.doctor else 'N/A' }}</td>
+          <td style="padding: 8px;">{{ appt.doctor.department.name if appt.doctor and appt.doctor.department else 'N/A' }}</td>
+          <td style="padding: 8px;">{{ appt.date }} at {{ appt.time }}</td>
+          <td style="padding: 8px;">
+            <span class="status-{{ appt.status | lower }}">
+              {{ appt.status }}
+            </span>
+          </td>
+          <td style="padding: 8px;">
+            {% if appt.status == 'Completed' %}
+              <a href="{{ url_for('admin_view_appointment_details', appt_id=appt.id) }}" class="btn-edit" style="text-decoration: none;">View Details</a>
+            {% else %}
+              N/A
+            {% endif %}
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="6" style="padding: 8px;">No appointments found in the system.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+{% endblock %}
